@@ -79,15 +79,15 @@ class TestRegisterProjectTest(TestCase):
                         for k in my_data:
                             if k["project_id"] == valor:
                                 found = True
-                                # this assert give me more information
+                                # this assertion give me more information
                                 # about the differences than assertEqual
                                 self.assertDictEqual(k, my_request.to_json())
-                        # if found is False , this assert fails
+                        # if found is False , this assertion fails
                         self.assertTrue(found)
                 else:
                     with self.subTest(test_id + valid):
 
-                        # we calculater the files signature bejore calling the tested method
+                        # we calculate the files signature before calling the tested method
                         if os.path.isfile(PROJECTS_STORE_FILE):
                             with open(PROJECTS_STORE_FILE, "r",
                                       encoding="utf-8", newline="") as file_org:
