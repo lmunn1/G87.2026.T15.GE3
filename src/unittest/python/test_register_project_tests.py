@@ -1,4 +1,4 @@
-"""class for testing the regsiter_project method"""
+"""class for testing the register_project method"""
 import unittest
 import csv
 import json
