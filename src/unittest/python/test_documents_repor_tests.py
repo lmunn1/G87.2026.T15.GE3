@@ -1,4 +1,4 @@
-"""class for testing the regsiter_order method"""
+"""Class for testing the register_order method"""
 import unittest
 import json
 import os.path
@@ -11,16 +11,16 @@ from uc3m_consulting import (TEST_NUMDOCS_STORE_FILE,
                         EnterpriseManager,
                         EnterpriseManagementException)
 
-class TestDocumentsReporTest(TestCase):
+class TestDocumentsReportTest(TestCase):
     """Class for testing deliver_product"""
     def setUp(self):
-        """ inicializo el entorno de prueba """
+        """Initializing the test environment"""
         if os.path.exists(TEST_NUMDOCS_STORE_FILE):
             remove(TEST_NUMDOCS_STORE_FILE)
 
     @staticmethod
     def read_file():
-        """ this method read a Json file and return the value """
+        """This method reads a JSON file and returns the value"""
         my_file= TEST_NUMDOCS_STORE_FILE
         try:
             with open(my_file, "r", encoding="utf-8", newline="") as file:
@@ -35,7 +35,7 @@ class TestDocumentsReporTest(TestCase):
     #pylint: disable=too-many-locals
     @freeze_time("2026/12/31 13:00:00")
     def test_valid_date(self):
-        """validates a valid case with a valid date finding documents
+        """Validates a valid case with a valid date finding documents
         and updating the numdocs_store.json file"""
         mngr = EnterpriseManager()
         res = mngr.find_docs("05/04/2026")
@@ -51,7 +51,7 @@ class TestDocumentsReporTest(TestCase):
 
     @freeze_time("2026/12/31 13:00:00")
     def test_file_wrong_date(self):
-        """path with wrong cif code (exception)"""
+        """Path with wrong cif code (exception)"""
         mngr = EnterpriseManager()
 
         if os.path.isfile(TEST_NUMDOCS_STORE_FILE):
@@ -73,7 +73,7 @@ class TestDocumentsReporTest(TestCase):
 
     @freeze_time("2026/12/31 13:00:00")
     def test_report_not_found(self):
-        """path with wrong cif code (exception)"""
+        """Path with wrong CIF code (exception)"""
         mngr = EnterpriseManager()
 
         if os.path.isfile(TEST_NUMDOCS_STORE_FILE):
