@@ -1,4 +1,4 @@
-"""class for testing the regsiter_project method"""
+"""class for testing the register_project method"""
 import unittest
 import csv
 import json
@@ -17,7 +17,7 @@ class TestRegisterProjectTest(TestCase):
     """Class for testing register_project"""
 
     def setUp(self):
-        """ inicializo el entorno de prueba """
+        """ Initialization of the Test Environment """
         if os.path.exists(PROJECTS_STORE_FILE):
             remove(PROJECTS_STORE_FILE)
 
@@ -79,15 +79,15 @@ class TestRegisterProjectTest(TestCase):
                         for k in my_data:
                             if k["project_id"] == valor:
                                 found = True
-                                # this assert give me more information
+                                # this assertion give me more information
                                 # about the differences than assertEqual
                                 self.assertDictEqual(k, my_request.to_json())
-                        # if found is False , this assert fails
+                        # if found is False , this assertion fails
                         self.assertTrue(found)
                 else:
                     with self.subTest(test_id + valid):
 
-                        # we calculater the files signature bejore calling the tested method
+                        # we calculate the files signature before calling the tested method
                         if os.path.isfile(PROJECTS_STORE_FILE):
                             with open(PROJECTS_STORE_FILE, "r",
                                       encoding="utf-8", newline="") as file_org:
@@ -116,7 +116,7 @@ class TestRegisterProjectTest(TestCase):
     @freeze_time("2026/03/22 13:00:00")
     def test_duplicated_project_test(self):
 
-        """tets method for duplicated projects"""
+        """tests method for duplicated projects"""
 
         enterprise_cif = "A12345674"
         project_acronym = "TEST5"
