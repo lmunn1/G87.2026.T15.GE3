@@ -34,28 +34,28 @@ class EnterpriseManager:
 
         for index in range(len(cif_digits)):
             if index % 2 == 0:
-                x = int(cif_digits[index]) * 2
-                if x > 9:
-                    even_position_sum = even_position_sum + (x // 10) + (x % 10)
+                doubled_digit = int(cif_digits[index]) * 2
+                if doubled_digit > 9:
+                    even_position_sum = even_position_sum + (doubled_digit // 10) + (doubled_digit % 10)
                 else:
-                    even_position_sum = even_position_sum + x
+                    even_position_sum = even_position_sum + doubled_digit
             else:
                 odd_position_sum = odd_position_sum + int(cif_digits[index])
 
-        t = even_position_sum + odd_position_sum
-        u2 = t % 10
-        r = 10 - u2
+        total_sum = even_position_sum + odd_position_sum
+        units_digit = total_sum % 10
+        expected_control_digit = 10 - units_digit
 
-        if r == 10:
-            r = 0
+        if expected_control_digit == 10:
+            expected_control_digit = 0
 
         dic = "JABCDEFGHI"
 
         if cif_prefix in ('A', 'B', 'E', 'H'):
-            if str(r) != cif_control_char:
+            if str(expected_control_digit) != cif_control_char:
                 raise EnterpriseManagementException("Invalid CIF character control number")
         elif cif_prefix in ('P', 'Q', 'S', 'K'):
-            if dic[r] != cif_control_char:
+            if dic[expected_control_digit] != cif_control_char:
                 raise EnterpriseManagementException("Invalid CIF character control letter")
         else:
             raise EnterpriseManagementException("CIF type not supported")
