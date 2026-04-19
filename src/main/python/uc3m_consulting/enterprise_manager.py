@@ -12,13 +12,13 @@ from uc3m_consulting.enterprise_manager_config import (PROJECTS_STORE_FILE,
 from uc3m_consulting.project_document import ProjectDocument
 
 class EnterpriseManager:
-    """Class for providing the methods for managing the orders"""
+    """Service class for registering projects and querying project documents"""
     def __init__(self):
         pass
 
     @staticmethod
     def validate_cif(c: str):
-        """validates a cif number """
+        """Validates a cif number"""
         if not isinstance(c, str):
             raise EnterpriseManagementException("CIF code must be a string")
         p = re.compile(r"^[ABCDEFGHJKNPQRSUVW]\d{7}[0-9A-J]$")
