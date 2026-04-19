@@ -1,4 +1,4 @@
-"""Module """
+"""Enterprise Manager module for project registration and document queries"""
 import re
 import json
 
