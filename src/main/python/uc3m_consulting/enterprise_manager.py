@@ -25,24 +25,24 @@ class EnterpriseManager:
         if not cif_pattern.fullmatch(cif_code):
             raise EnterpriseManagementException("Invalid CIF format")
 
-        l = cif_code[0]
-        n = cif_code[1:8]
-        u = cif_code[8]
+        cif_prefix = cif_code[0]
+        cif_digits = cif_code[1:8]
+        cif_control_char = cif_code[8]
 
-        s1 = 0
-        s2 = 0
+        even_position_sum = 0
+        odd_position_sum = 0
 
-        for i in range(len(n)):
+        for i in range(len(cif_digits)):
             if i % 2 == 0:
-                x = int(n[i]) * 2
+                x = int(cif_digits[i]) * 2
                 if x > 9:
-                    s1 = s1 + (x // 10) + (x % 10)
+                    even_position_sum = even_position_sum + (x // 10) + (x % 10)
                 else:
-                    s1 = s1 + x
+                    even_position_sum = even_position_sum + x
             else:
-                s2 = s2 + int(n[i])
+                odd_position_sum = odd_position_sum + int(cif_digits[i])
 
-        t = s1 + s2
+        t = even_position_sum + odd_position_sum
         u2 = t % 10
         r = 10 - u2
 
@@ -51,11 +51,11 @@ class EnterpriseManager:
 
         dic = "JABCDEFGHI"
 
-        if l in ('A', 'B', 'E', 'H'):
-            if str(r) != u:
+        if cif_prefix in ('A', 'B', 'E', 'H'):
+            if str(r) != cif_control_char:
                 raise EnterpriseManagementException("Invalid CIF character control number")
-        elif l in ('P', 'Q', 'S', 'K'):
-            if dic[r] != u:
+        elif cif_prefix in ('P', 'Q', 'S', 'K'):
+            if dic[r] != cif_control_char:
                 raise EnterpriseManagementException("Invalid CIF character control letter")
         else:
             raise EnterpriseManagementException("CIF type not supported")
