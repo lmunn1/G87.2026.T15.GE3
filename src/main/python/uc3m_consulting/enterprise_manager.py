@@ -32,15 +32,15 @@ class EnterpriseManager:
         even_position_sum = 0
         odd_position_sum = 0
 
-        for i in range(len(cif_digits)):
-            if i % 2 == 0:
-                x = int(cif_digits[i]) * 2
+        for index in range(len(cif_digits)):
+            if index % 2 == 0:
+                x = int(cif_digits[index]) * 2
                 if x > 9:
                     even_position_sum = even_position_sum + (x // 10) + (x % 10)
                 else:
                     even_position_sum = even_position_sum + x
             else:
-                odd_position_sum = odd_position_sum + int(cif_digits[i])
+                odd_position_sum = odd_position_sum + int(cif_digits[index])
 
         t = even_position_sum + odd_position_sum
         u2 = t % 10
