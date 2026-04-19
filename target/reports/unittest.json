@@ -1,14 +1,5 @@
 {
-  "errors": [
-    {
-      "test": "unittest.loader._FailedTest.test_register_project_tests",
-      "traceback": "Traceback (most recent call last):\n  File \"/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/case.py\", line 57, in testPartExecutor\n    yield\n  File \"/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n    ^^^^^^^^^^^^^^^^^\n  File \"/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n    ^^^^^^^^^^^^^^^^^\n  File \"/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/loader.py\", line 34, in testFailure\n    raise self._exception\n    ^^^^^^^^^^^^^^^^^\nImportError: Failed to import test module: test_register_project_tests\nTraceback (most recent call last):\n  File \"/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/loader.py\", line 154, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/linusmunn/PycharmProjects/G87.2026.T15.GE3/src/unittest/python/test_register_project_tests.py\", line 9, in <module>\n    from freezegun import freeze_time\nModuleNotFoundError: No module named 'freezegun'\n\n"
-    },
-    {
-      "test": "unittest.loader._FailedTest.test_documents_repor_tests",
-      "traceback": "Traceback (most recent call last):\n  File \"/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/case.py\", line 57, in testPartExecutor\n    yield\n  File \"/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n    ^^^^^^^^^^^^^^^^^\n  File \"/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n    ^^^^^^^^^^^^^^^^^\n  File \"/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/loader.py\", line 34, in testFailure\n    raise self._exception\n    ^^^^^^^^^^^^^^^^^\nImportError: Failed to import test module: test_documents_repor_tests\nTraceback (most recent call last):\n  File \"/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/loader.py\", line 154, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/linusmunn/PycharmProjects/G87.2026.T15.GE3/src/unittest/python/test_documents_repor_tests.py\", line 9, in <module>\n    from freezegun import freeze_time\nModuleNotFoundError: No module named 'freezegun'\n\n"
-    }
-  ],
+  "errors": [],
   "failures": [],
-  "tests-run": 2
+  "tests-run": 8
 }
