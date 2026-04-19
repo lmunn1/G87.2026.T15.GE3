@@ -116,7 +116,7 @@ class TestRegisterProjectTest(TestCase):
     @freeze_time("2026/03/22 13:00:00")
     def test_duplicated_project_test(self):
 
-        """tets method for duplicated projects"""
+        """tests method for duplicated projects"""
 
         enterprise_cif = "A12345674"
         project_acronym = "TEST5"
