@@ -21,8 +21,8 @@ class EnterpriseManager:
         """Validates a cif number"""
         if not isinstance(cif_code, str):
             raise EnterpriseManagementException("CIF code must be a string")
-        p = re.compile(r"^[ABCDEFGHJKNPQRSUVW]\d{7}[0-9A-J]$")
-        if not p.fullmatch(cif_code):
+        cif_pattern = re.compile(r"^[ABCDEFGHJKNPQRSUVW]\d{7}[0-9A-J]$")
+        if not cif_pattern.fullmatch(cif_code):
             raise EnterpriseManagementException("Invalid CIF format")
 
         l = cif_code[0]
