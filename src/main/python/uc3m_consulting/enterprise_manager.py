@@ -1,4 +1,4 @@
-"""Module """
+"""Enterprise Manager module for project registration and document queries"""
 import re
 import json
 
@@ -12,22 +12,22 @@ from uc3m_consulting.enterprise_manager_config import (PROJECTS_STORE_FILE,
 from uc3m_consulting.project_document import ProjectDocument
 
 class EnterpriseManager:
-    """Class for providing the methods for managing the orders"""
+    """Service class for registering projects and querying project documents"""
     def __init__(self):
         pass
 
     @staticmethod
-    def validate_cif(c: str):
-        """validates a cif number """
-        if not isinstance(c, str):
+    def validate_cif(cif_code: str):
+        """Validates a cif number"""
+        if not isinstance(cif_code, str):
             raise EnterpriseManagementException("CIF code must be a string")
         p = re.compile(r"^[ABCDEFGHJKNPQRSUVW]\d{7}[0-9A-J]$")
-        if not p.fullmatch(c):
+        if not p.fullmatch(cif_code):
             raise EnterpriseManagementException("Invalid CIF format")
 
-        l = c[0]
-        n = c[1:8]
-        u = c[8]
+        l = cif_code[0]
+        n = cif_code[1:8]
+        u = cif_code[8]
 
         s1 = 0
         s2 = 0
