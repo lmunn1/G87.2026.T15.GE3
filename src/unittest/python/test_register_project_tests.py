@@ -17,7 +17,7 @@ class TestRegisterProjectTest(TestCase):
     """Class for testing register_project"""
 
     def setUp(self):
-        """ inicializo el entorno de prueba """
+        """ Initialization of the Test Environment """
         if os.path.exists(PROJECTS_STORE_FILE):
             remove(PROJECTS_STORE_FILE)
 
