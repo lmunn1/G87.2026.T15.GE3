@@ -30,7 +30,7 @@ class EnterpriseProject:
         return {
             "company_cif": self.__company_cif,
             "project_description": self.__project_description,
-            "project_acronym": self.__project_achronym,
+            "project_acronym": self.__project_acronym,
             "project_budget": self.__project_budget,
             "department": self.__department,
             "starting_date": self.__starting_date,
@@ -58,10 +58,10 @@ class EnterpriseProject:
     @property
     def project_acronym(self):
         """Property representing the acronym"""
-        return self.__project_achronym
+        return self.__project_acronym
     @project_acronym.setter
     def project_acronym(self, value):
-        self.__project_achronym = value
+        self.__project_acronym = value
 
     @property
     def project_budget(self):
