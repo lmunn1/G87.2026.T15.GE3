@@ -61,24 +61,25 @@ class EnterpriseManager:
             raise EnterpriseManagementException("CIF type not supported")
         return True
 
-    def validate_starting_date(self, t_d):
+    def validate_starting_date(self, starting_date):
         """validates the  date format  using regex"""
-        mr = re.compile(r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$")
-        res = mr.fullmatch(t_d)
-        if not res:
+        date_pattern = re.compile(r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$")
+        match = date_pattern.fullmatch(starting_date)
+        if not match:
             raise EnterpriseManagementException("Invalid date format")
 
         try:
-            my_date = datetime.strptime(t_d, "%d/%m/%Y").date()
+            parsed_date = datetime.strptime(starting_date, "%d/%m/%Y").date()
         except ValueError as ex:
             raise EnterpriseManagementException("Invalid date format") from ex
 
-        if my_date < datetime.now(timezone.utc).date():
+        if parsed_date < datetime.now(timezone.utc).date():
             raise EnterpriseManagementException("Project's date must be today or later.")
 
-        if my_date.year < 2025 or my_date.year > 2050:
+        if parsed_date.year < 2025 or parsed_date.year > 2050:
             raise EnterpriseManagementException("Invalid date format")
-        return t_d
+        return starting_date
+
     #pylint: disable=too-many-arguments, too-many-positional-arguments
     def register_project(self,
                          company_cif: str,
@@ -89,34 +90,34 @@ class EnterpriseManager:
                          budget: str):
         """registers a new project"""
         self.validate_cif(company_cif)
-        mr = re.compile(r"^[a-zA-Z0-9]{5,10}")
-        res = mr.fullmatch(project_acronym)
-        if not res:
+        acronym_pattern = re.compile(r"^[a-zA-Z0-9]{5,10}")
+        match = acronym_pattern.fullmatch(project_acronym)
+        if not match:
             raise EnterpriseManagementException("Invalid acronym")
-        md = re.compile(r"^.{10,30}$")
-        res = md.fullmatch(project_description)
-        if not res:
+        description_pattern = re.compile(r"^.{10,30}$")
+        match = description_pattern.fullmatch(project_description)
+        if not match:
             raise EnterpriseManagementException("Invalid description format")
 
-        mr = re.compile(r"(HR|FINANCE|LEGAL|LOGISTICS)")
-        res = mr.fullmatch(department)
-        if not res:
+        department_pattern = re.compile(r"(HR|FINANCE|LEGAL|LOGISTICS)")
+        match = department_pattern.fullmatch(department)
+        if not match:
             raise EnterpriseManagementException("Invalid department")
 
         self.validate_starting_date(date)
 
         try:
-            f_bdgt  = float(budget)
+            parsed_budget  = float(budget)
         except ValueError as exc:
             raise EnterpriseManagementException("Invalid budget amount") from exc
 
-        n_str = str(f_bdgt)
-        if '.' in n_str:
-            decimales = len(n_str.split('.')[1])
-            if decimales > 2:
+        budget_text = str(parsed_budget)
+        if '.' in budget_text:
+            decimal_places = len(budget_text.split('.')[1])
+            if decimal_places > 2:
                 raise EnterpriseManagementException("Invalid budget amount")
 
-        if f_bdgt < 50000 or f_bdgt > 1000000:
+        if parsed_budget < 50000 or parsed_budget > 1000000:
             raise EnterpriseManagementException("Invalid budget amount")
 
 
@@ -129,21 +130,21 @@ class EnterpriseManager:
 
         try:
             with open(PROJECTS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                t_l = json.load(file)
+                stored_projects = json.load(file)
         except FileNotFoundError:
-            t_l = []
+            stored_projects = []
         except json.JSONDecodeError as ex:
             raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
 
-        for t_i in t_l:
-            if t_i == new_project.to_json():
+        for stored_project in stored_projects:
+            if stored_project == new_project.to_json():
                 raise EnterpriseManagementException("Duplicated project in projects list")
 
-        t_l.append(new_project.to_json())
+        stored_projects.append(new_project.to_json())
 
         try:
             with open(PROJECTS_STORE_FILE, "w", encoding="utf-8", newline="") as file:
-                json.dump(t_l, file, indent=2)
+                json.dump(stored_projects, file, indent=2)
         except FileNotFoundError as ex:
             raise EnterpriseManagementException("Wrong file  or file path") from ex
         except json.JSONDecodeError as ex:
