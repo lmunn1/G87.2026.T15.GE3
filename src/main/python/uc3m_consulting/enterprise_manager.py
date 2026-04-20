@@ -107,17 +107,17 @@ class EnterpriseManager:
         self.validate_starting_date(date)
 
         try:
-            f_bdgt  = float(budget)
+            parsed_budget  = float(budget)
         except ValueError as exc:
             raise EnterpriseManagementException("Invalid budget amount") from exc
 
-        n_str = str(f_bdgt)
-        if '.' in n_str:
-            decimales = len(n_str.split('.')[1])
-            if decimales > 2:
+        budget_text = str(parsed_budget)
+        if '.' in budget_text:
+            decimal_places = len(budget_text.split('.')[1])
+            if decimal_places > 2:
                 raise EnterpriseManagementException("Invalid budget amount")
 
-        if f_bdgt < 50000 or f_bdgt > 1000000:
+        if parsed_budget < 50000 or parsed_budget > 1000000:
             raise EnterpriseManagementException("Invalid budget amount")
 
 
@@ -130,21 +130,21 @@ class EnterpriseManager:
 
         try:
             with open(PROJECTS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                t_l = json.load(file)
+                stored_projects = json.load(file)
         except FileNotFoundError:
-            t_l = []
+            stored_projects = []
         except json.JSONDecodeError as ex:
             raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
 
-        for t_i in t_l:
-            if t_i == new_project.to_json():
+        for stored_project in stored_projects:
+            if stored_project == new_project.to_json():
                 raise EnterpriseManagementException("Duplicated project in projects list")
 
-        t_l.append(new_project.to_json())
+        stored_projects.append(new_project.to_json())
 
         try:
             with open(PROJECTS_STORE_FILE, "w", encoding="utf-8", newline="") as file:
-                json.dump(t_l, file, indent=2)
+                json.dump(stored_projects, file, indent=2)
         except FileNotFoundError as ex:
             raise EnterpriseManagementException("Wrong file  or file path") from ex
         except json.JSONDecodeError as ex:
