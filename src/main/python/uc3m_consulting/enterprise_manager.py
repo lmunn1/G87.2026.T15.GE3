@@ -212,23 +212,23 @@ class EnterpriseManager:
         if document_count == 0:
             raise EnterpriseManagementException("No documents found")
         # prepare json text
-        now_str = datetime.now(timezone.utc).timestamp()
-        s = {"Querydate":  date_str,
-             "ReportDate": now_str,
+        report_timestamp = datetime.now(timezone.utc).timestamp()
+        report_entry = {"Querydate":  date_str,
+             "ReportDate": report_timestamp,
              "Numfiles": document_count
              }
 
         try:
             with open(TEST_NUMDOCS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                dl = json.load(file)
+                stored_reports = json.load(file)
         except FileNotFoundError:
-            dl = []
+            stored_reports = []
         except json.JSONDecodeError as ex:
             raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
-        dl.append(s)
+        stored_reports.append(report_entry)
         try:
             with open(TEST_NUMDOCS_STORE_FILE, "w", encoding="utf-8", newline="") as file:
-                json.dump(dl, file, indent=2)
+                json.dump(stored_reports, file, indent=2)
         except FileNotFoundError as ex:
             raise EnterpriseManagementException("Wrong file  or file path") from ex
         return document_count
