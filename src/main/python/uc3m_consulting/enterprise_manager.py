@@ -169,13 +169,13 @@ class EnterpriseManager:
             EnterpriseManagementException: On invalid date, file IO errors,
                 missing data, or cryptographic integrity failure.
         """
-        mr = re.compile(r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$")
-        res = mr.fullmatch(date_str)
-        if not res:
+        date_pattern = re.compile(r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$")
+        match = date_pattern.fullmatch(date_str)
+        if not match:
             raise EnterpriseManagementException("Invalid date format")
 
         try:
-            my_date = datetime.strptime(date_str, "%d/%m/%Y").date()
+            parsed_date = datetime.strptime(date_str, "%d/%m/%Y").date()
         except ValueError as ex:
             raise EnterpriseManagementException("Invalid date format") from ex
 
@@ -183,52 +183,52 @@ class EnterpriseManager:
         # open documents
         try:
             with open(TEST_DOCUMENTS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                d_list = json.load(file)
+                stored_documents = json.load(file)
         except FileNotFoundError as ex:
             raise EnterpriseManagementException("Wrong file  or file path") from ex
 
 
-        rst = 0
+        document_count = 0
 
         # loop to find
-        for el in d_list:
-            time_val = el["register_date"]
+        for document_record in stored_documents:
+            register_timestamp = document_record["register_date"]
 
             # string conversion for easy match
-            doc_date_str = datetime.fromtimestamp(time_val).strftime("%d/%m/%Y")
+            doc_date_str = datetime.fromtimestamp(register_timestamp).strftime("%d/%m/%Y")
 
             if doc_date_str == date_str:
-                d_obj = datetime.fromtimestamp(time_val, tz=timezone.utc)
-                with freeze_time(d_obj):
+                document_datetime = datetime.fromtimestamp(register_timestamp, tz=timezone.utc)
+                with freeze_time(document_datetime):
                     # check the project id (thanks to freezetime)
                     # if project_id are different then the data has been
                     #manipulated
-                    p = ProjectDocument(el["project_id"], el["file_name"])
-                    if p.document_signature == el["document_signature"]:
-                        rst = rst + 1
+                    project_document = ProjectDocument(document_record["project_id"], document_record["file_name"])
+                    if project_document.document_signature == document_record["document_signature"]:
+                        document_count = document_count + 1
                     else:
                         raise EnterpriseManagementException("Inconsistent document signature")
 
-        if rst == 0:
+        if document_count == 0:
             raise EnterpriseManagementException("No documents found")
         # prepare json text
-        now_str = datetime.now(timezone.utc).timestamp()
-        s = {"Querydate":  date_str,
-             "ReportDate": now_str,
-             "Numfiles": rst
+        report_timestamp = datetime.now(timezone.utc).timestamp()
+        report_entry = {"Querydate":  date_str,
+             "ReportDate": report_timestamp,
+             "Numfiles": document_count
              }
 
         try:
             with open(TEST_NUMDOCS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                dl = json.load(file)
+                stored_reports = json.load(file)
         except FileNotFoundError:
-            dl = []
+            stored_reports = []
         except json.JSONDecodeError as ex:
             raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
-        dl.append(s)
+        stored_reports.append(report_entry)
         try:
             with open(TEST_NUMDOCS_STORE_FILE, "w", encoding="utf-8", newline="") as file:
-                json.dump(dl, file, indent=2)
+                json.dump(stored_reports, file, indent=2)
         except FileNotFoundError as ex:
             raise EnterpriseManagementException("Wrong file  or file path") from ex
-        return rst
+        return document_count
