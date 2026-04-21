@@ -16,6 +16,20 @@ class EnterpriseManager:
     def __init__(self):
         pass
 
+    # Code Duplication: This helper handles date logic for validate_starting_date and find_docs.
+    @staticmethod
+    def _parse_date(date_value: str):
+        """Validate a date string and return the parsed date"""
+        date_pattern = re.compile(r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$")
+        match = date_pattern.fullmatch(date_value)
+        if not match:
+            raise EnterpriseManagementException("Invalid date format")
+
+        try:
+            return datetime.strptime(date_value, "%d/%m/%Y").date()
+        except ValueError as ex:
+            raise EnterpriseManagementException("Invalid date format") from ex
+
     @staticmethod
     def validate_cif(cif_code: str):
         """Validates a cif number"""
