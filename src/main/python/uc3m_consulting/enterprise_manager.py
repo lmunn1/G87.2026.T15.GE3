@@ -43,6 +43,16 @@ class EnterpriseManager:
         except json.JSONDecodeError as ex:
             raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
 
+    # Code Duplication: This helper handles JSON writing logic
+    @staticmethod
+    def _write_json_file(file_path, data):
+        """Write JSON data to a file."""
+        try:
+            with open(file_path, "w", encoding="utf-8", newline="") as file:
+                json.dump(data, file, indent=2)
+        except FileNotFoundError as ex:
+            raise EnterpriseManagementException("Wrong file  or file path") from ex
+
     @staticmethod
     def validate_cif(cif_code: str):
         """Validates a cif number"""
@@ -155,13 +165,8 @@ class EnterpriseManager:
 
         stored_projects.append(new_project.to_json())
 
-        try:
-            with open(PROJECTS_STORE_FILE, "w", encoding="utf-8", newline="") as file:
-                json.dump(stored_projects, file, indent=2)
-        except FileNotFoundError as ex:
-            raise EnterpriseManagementException("Wrong file  or file path") from ex
-        except json.JSONDecodeError as ex:
-            raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
+        self._write_json_file(PROJECTS_STORE_FILE, stored_projects)
+
         return new_project.project_id
 
 
@@ -221,9 +226,6 @@ class EnterpriseManager:
 
         stored_reports.append(report_entry)
 
-        try:
-            with open(TEST_NUMDOCS_STORE_FILE, "w", encoding="utf-8", newline="") as file:
-                json.dump(stored_reports, file, indent=2)
-        except FileNotFoundError as ex:
-            raise EnterpriseManagementException("Wrong file  or file path") from ex
+        self._write_json_file(TEST_NUMDOCS_STORE_FILE, stored_reports)
+
         return document_count
