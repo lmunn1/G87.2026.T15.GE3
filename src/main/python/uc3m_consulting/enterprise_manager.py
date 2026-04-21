@@ -175,7 +175,7 @@ class EnterpriseManager:
             EnterpriseManagementException: On invalid date, file IO errors,
                 missing data, or cryptographic integrity failure.
         """
-        parsed_date = self._parse_date(date_str)
+        self._parse_date(date_str)
 
         # open documents
         try:
