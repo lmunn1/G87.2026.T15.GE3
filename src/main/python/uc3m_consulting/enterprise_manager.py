@@ -16,7 +16,7 @@ class EnterpriseManager:
     def __init__(self):
         pass
 
-    # Code Duplication: This helper handles date logic for validate_starting_date and find_docs.
+    # Code Duplication - Added helper
     @staticmethod
     def _parse_date(date_value: str):
         """Validate a date string and return the parsed date"""
@@ -29,7 +29,7 @@ class EnterpriseManager:
         except ValueError as ex:
             raise EnterpriseManagementException("Invalid date format") from ex
 
-    # Code Duplication: This helper handles JSON file loading logic
+    # Code Duplication: Added helper
     @staticmethod
     def _load_json_file(file_path, default_on_missing=None):
         """Load and return JSON data from a file."""
@@ -43,7 +43,7 @@ class EnterpriseManager:
         except json.JSONDecodeError as ex:
             raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
 
-    # Code Duplication: This helper handles JSON writing logic
+    # Code Duplication: Added helper
     @staticmethod
     def _write_json_file(file_path, data):
         """Write JSON data to a file."""
@@ -52,6 +52,36 @@ class EnterpriseManager:
                 json.dump(data, file, indent=2)
         except FileNotFoundError as ex:
             raise EnterpriseManagementException("Wrong file  or file path") from ex
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _calculate_cif_control_digit(cif_digits: str):
+        """Calculate the expected control digit for a CIF."""
+        even_position_sum = 0
+        odd_position_sum = 0
+
+        for index in range(len(cif_digits)):
+            if index % 2 == 0:
+                doubled_digit = int(cif_digits[index]) * 2
+                if doubled_digit > 9:
+                    even_position_sum = (
+                            even_position_sum
+                            + (doubled_digit // 10)
+                            + (doubled_digit % 10)
+                    )
+                else:
+                    even_position_sum = even_position_sum + doubled_digit
+            else:
+                odd_position_sum = odd_position_sum + int(cif_digits[index])
+
+        total_sum = even_position_sum + odd_position_sum
+        units_digit = total_sum % 10
+        expected_control_digit = 10 - units_digit
+
+        if expected_control_digit == 10:
+            expected_control_digit = 0
+
+        return expected_control_digit
 
     @staticmethod
     def validate_cif(cif_code: str):
@@ -65,26 +95,7 @@ class EnterpriseManager:
         cif_prefix = cif_code[0]
         cif_digits = cif_code[1:8]
         cif_control_char = cif_code[8]
-
-        even_position_sum = 0
-        odd_position_sum = 0
-
-        for index in range(len(cif_digits)):
-            if index % 2 == 0:
-                doubled_digit = int(cif_digits[index]) * 2
-                if doubled_digit > 9:
-                    even_position_sum = even_position_sum + (doubled_digit // 10) + (doubled_digit % 10)
-                else:
-                    even_position_sum = even_position_sum + doubled_digit
-            else:
-                odd_position_sum = odd_position_sum + int(cif_digits[index])
-
-        total_sum = even_position_sum + odd_position_sum
-        units_digit = total_sum % 10
-        expected_control_digit = 10 - units_digit
-
-        if expected_control_digit == 10:
-            expected_control_digit = 0
+        expected_control_digit = EnterpriseManager._calculate_cif_control_digit(cif_digits)
 
         control_letters = "JABCDEFGHI"
 
