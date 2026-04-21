@@ -16,6 +16,73 @@ class EnterpriseManager:
     def __init__(self):
         pass
 
+    # Code Duplication - Added helper
+    @staticmethod
+    def _parse_date(date_value: str):
+        """Validate a date string and return the parsed date"""
+        date_pattern = re.compile(r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$")
+        match = date_pattern.fullmatch(date_value)
+        if not match:
+            raise EnterpriseManagementException("Invalid date format")
+        try:
+            return datetime.strptime(date_value, "%d/%m/%Y").date()
+        except ValueError as ex:
+            raise EnterpriseManagementException("Invalid date format") from ex
+
+    # Code Duplication: Added helper
+    @staticmethod
+    def _load_json_file(file_path, default_on_missing=None):
+        """Load and return JSON data from a file."""
+        try:
+            with open(file_path, "r", encoding="utf-8", newline="") as file:
+                return json.load(file)
+        except FileNotFoundError as ex:
+            if default_on_missing is not None:
+                return default_on_missing
+            raise EnterpriseManagementException("Wrong file  or file path") from ex
+        except json.JSONDecodeError as ex:
+            raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
+
+    # Code Duplication: Added helper
+    @staticmethod
+    def _write_json_file(file_path, data):
+        """Write JSON data to a file."""
+        try:
+            with open(file_path, "w", encoding="utf-8", newline="") as file:
+                json.dump(data, file, indent=2)
+        except FileNotFoundError as ex:
+            raise EnterpriseManagementException("Wrong file  or file path") from ex
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _calculate_cif_control_digit(cif_digits: str):
+        """Calculate the expected control digit for a CIF."""
+        even_position_sum = 0
+        odd_position_sum = 0
+
+        for index in range(len(cif_digits)):
+            if index % 2 == 0:
+                doubled_digit = int(cif_digits[index]) * 2
+                if doubled_digit > 9:
+                    even_position_sum = (
+                            even_position_sum
+                            + (doubled_digit // 10)
+                            + (doubled_digit % 10)
+                    )
+                else:
+                    even_position_sum = even_position_sum + doubled_digit
+            else:
+                odd_position_sum = odd_position_sum + int(cif_digits[index])
+
+        total_sum = even_position_sum + odd_position_sum
+        units_digit = total_sum % 10
+        expected_control_digit = 10 - units_digit
+
+        if expected_control_digit == 10:
+            expected_control_digit = 0
+
+        return expected_control_digit
+
     @staticmethod
     def validate_cif(cif_code: str):
         """Validates a cif number"""
@@ -28,26 +95,7 @@ class EnterpriseManager:
         cif_prefix = cif_code[0]
         cif_digits = cif_code[1:8]
         cif_control_char = cif_code[8]
-
-        even_position_sum = 0
-        odd_position_sum = 0
-
-        for index in range(len(cif_digits)):
-            if index % 2 == 0:
-                doubled_digit = int(cif_digits[index]) * 2
-                if doubled_digit > 9:
-                    even_position_sum = even_position_sum + (doubled_digit // 10) + (doubled_digit % 10)
-                else:
-                    even_position_sum = even_position_sum + doubled_digit
-            else:
-                odd_position_sum = odd_position_sum + int(cif_digits[index])
-
-        total_sum = even_position_sum + odd_position_sum
-        units_digit = total_sum % 10
-        expected_control_digit = 10 - units_digit
-
-        if expected_control_digit == 10:
-            expected_control_digit = 0
+        expected_control_digit = EnterpriseManager._calculate_cif_control_digit(cif_digits)
 
         control_letters = "JABCDEFGHI"
 
@@ -63,15 +111,7 @@ class EnterpriseManager:
 
     def validate_starting_date(self, starting_date):
         """validates the  date format  using regex"""
-        date_pattern = re.compile(r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$")
-        match = date_pattern.fullmatch(starting_date)
-        if not match:
-            raise EnterpriseManagementException("Invalid date format")
-
-        try:
-            parsed_date = datetime.strptime(starting_date, "%d/%m/%Y").date()
-        except ValueError as ex:
-            raise EnterpriseManagementException("Invalid date format") from ex
+        parsed_date = self._parse_date(starting_date)
 
         if parsed_date < datetime.now(timezone.utc).date():
             raise EnterpriseManagementException("Project's date must be today or later.")
@@ -128,13 +168,7 @@ class EnterpriseManager:
                                         starting_date=date,
                                         project_budget=budget)
 
-        try:
-            with open(PROJECTS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                stored_projects = json.load(file)
-        except FileNotFoundError:
-            stored_projects = []
-        except json.JSONDecodeError as ex:
-            raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
+        stored_projects = self._load_json_file(PROJECTS_STORE_FILE, default_on_missing=[])
 
         for stored_project in stored_projects:
             if stored_project == new_project.to_json():
@@ -142,13 +176,8 @@ class EnterpriseManager:
 
         stored_projects.append(new_project.to_json())
 
-        try:
-            with open(PROJECTS_STORE_FILE, "w", encoding="utf-8", newline="") as file:
-                json.dump(stored_projects, file, indent=2)
-        except FileNotFoundError as ex:
-            raise EnterpriseManagementException("Wrong file  or file path") from ex
-        except json.JSONDecodeError as ex:
-            raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
+        self._write_json_file(PROJECTS_STORE_FILE, stored_projects)
+
         return new_project.project_id
 
 
@@ -169,24 +198,10 @@ class EnterpriseManager:
             EnterpriseManagementException: On invalid date, file IO errors,
                 missing data, or cryptographic integrity failure.
         """
-        date_pattern = re.compile(r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$")
-        match = date_pattern.fullmatch(date_str)
-        if not match:
-            raise EnterpriseManagementException("Invalid date format")
-
-        try:
-            parsed_date = datetime.strptime(date_str, "%d/%m/%Y").date()
-        except ValueError as ex:
-            raise EnterpriseManagementException("Invalid date format") from ex
-
+        self._parse_date(date_str)
 
         # open documents
-        try:
-            with open(TEST_DOCUMENTS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                stored_documents = json.load(file)
-        except FileNotFoundError as ex:
-            raise EnterpriseManagementException("Wrong file  or file path") from ex
-
+        stored_documents = self._load_json_file(TEST_DOCUMENTS_STORE_FILE)
 
         document_count = 0
 
@@ -218,17 +233,10 @@ class EnterpriseManager:
              "Numfiles": document_count
              }
 
-        try:
-            with open(TEST_NUMDOCS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                stored_reports = json.load(file)
-        except FileNotFoundError:
-            stored_reports = []
-        except json.JSONDecodeError as ex:
-            raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
+        stored_reports = self._load_json_file(TEST_NUMDOCS_STORE_FILE, default_on_missing=[])
+
         stored_reports.append(report_entry)
-        try:
-            with open(TEST_NUMDOCS_STORE_FILE, "w", encoding="utf-8", newline="") as file:
-                json.dump(stored_reports, file, indent=2)
-        except FileNotFoundError as ex:
-            raise EnterpriseManagementException("Wrong file  or file path") from ex
+
+        self._write_json_file(TEST_NUMDOCS_STORE_FILE, stored_reports)
+
         return document_count
