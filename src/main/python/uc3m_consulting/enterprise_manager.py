@@ -24,11 +24,24 @@ class EnterpriseManager:
         match = date_pattern.fullmatch(date_value)
         if not match:
             raise EnterpriseManagementException("Invalid date format")
-
         try:
             return datetime.strptime(date_value, "%d/%m/%Y").date()
         except ValueError as ex:
             raise EnterpriseManagementException("Invalid date format") from ex
+
+    # Code Duplication: This helper handles JSON file loading logic
+    @staticmethod
+    def _load_json_file(file_path, default_on_missing=None):
+        """Load and return JSON data from a file."""
+        try:
+            with open(file_path, "r", encoding="utf-8", newline="") as file:
+                return json.load(file)
+        except FileNotFoundError as ex:
+            if default_on_missing is not None:
+                return default_on_missing
+            raise EnterpriseManagementException("Wrong file  or file path") from ex
+        except json.JSONDecodeError as ex:
+            raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
 
     @staticmethod
     def validate_cif(cif_code: str):
@@ -134,13 +147,7 @@ class EnterpriseManager:
                                         starting_date=date,
                                         project_budget=budget)
 
-        try:
-            with open(PROJECTS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                stored_projects = json.load(file)
-        except FileNotFoundError:
-            stored_projects = []
-        except json.JSONDecodeError as ex:
-            raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
+        stored_projects = self._load_json_file(PROJECTS_STORE_FILE, default_on_missing=[])
 
         for stored_project in stored_projects:
             if stored_project == new_project.to_json():
