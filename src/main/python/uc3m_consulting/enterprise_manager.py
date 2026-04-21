@@ -185,12 +185,7 @@ class EnterpriseManager:
         self._parse_date(date_str)
 
         # open documents
-        try:
-            with open(TEST_DOCUMENTS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                stored_documents = json.load(file)
-        except FileNotFoundError as ex:
-            raise EnterpriseManagementException("Wrong file  or file path") from ex
-
+        stored_documents = self._load_json_file(TEST_DOCUMENTS_STORE_FILE)
 
         document_count = 0
 
@@ -222,14 +217,10 @@ class EnterpriseManager:
              "Numfiles": document_count
              }
 
-        try:
-            with open(TEST_NUMDOCS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                stored_reports = json.load(file)
-        except FileNotFoundError:
-            stored_reports = []
-        except json.JSONDecodeError as ex:
-            raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
+        stored_reports = self._load_json_file(TEST_NUMDOCS_STORE_FILE, default_on_missing=[])
+
         stored_reports.append(report_entry)
+
         try:
             with open(TEST_NUMDOCS_STORE_FILE, "w", encoding="utf-8", newline="") as file:
                 json.dump(stored_reports, file, indent=2)
