@@ -77,15 +77,7 @@ class EnterpriseManager:
 
     def validate_starting_date(self, starting_date):
         """validates the  date format  using regex"""
-        date_pattern = re.compile(r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$")
-        match = date_pattern.fullmatch(starting_date)
-        if not match:
-            raise EnterpriseManagementException("Invalid date format")
-
-        try:
-            parsed_date = datetime.strptime(starting_date, "%d/%m/%Y").date()
-        except ValueError as ex:
-            raise EnterpriseManagementException("Invalid date format") from ex
+        parsed_date = self._parse_date(starting_date)
 
         if parsed_date < datetime.now(timezone.utc).date():
             raise EnterpriseManagementException("Project's date must be today or later.")
