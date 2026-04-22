@@ -221,13 +221,7 @@ class EnterpriseManager:
                                         starting_date=date,
                                         project_budget=budget)
 
-        stored_projects = JsonStore.load_json_file(PROJECTS_STORE_FILE, default_on_missing=[])
-
-        self._check_project_not_duplicated(stored_projects, new_project)
-
-        stored_projects.append(new_project.to_json())
-
-        JsonStore.write_json_file(PROJECTS_STORE_FILE, stored_projects)
+        ProjectsJsonStore.add_project(new_project)
 
         return new_project.project_id
 
