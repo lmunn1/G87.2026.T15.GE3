@@ -2,7 +2,8 @@ import json
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
 
 class JsonStore:
-    # Code Duplication: Added helper
+    """Generic JSON storage helper"""
+
     @staticmethod
     def load_json_file(file_path, default_on_missing=None):
         """Load and return JSON data from a file."""
@@ -16,7 +17,6 @@ class JsonStore:
         except json.JSONDecodeError as ex:
             raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
 
-    # Code Duplication: Added helper
     @staticmethod
     def write_json_file(file_path, data):
         """Write JSON data to a file."""
