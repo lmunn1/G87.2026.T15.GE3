@@ -83,6 +83,24 @@ class EnterpriseManager:
 
         return expected_control_digit
 
+    # Long Functions: Added helper
+    @staticmethod
+    def _validate_acronym(project_acronym: str):
+        """Validate project acronym."""
+        acronym_pattern = re.compile(r"^[a-zA-Z0-9]{5,10}$")
+        match = acronym_pattern.fullmatch(project_acronym)
+        if not match:
+            raise EnterpriseManagementException("Invalid acronym")
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _validate_description(project_description: str):
+        """Validate project description."""
+        description_pattern = re.compile(r"^.{10,30}$")
+        match = description_pattern.fullmatch(project_description)
+        if not match:
+            raise EnterpriseManagementException("Invalid description format")
+
     @staticmethod
     def validate_cif(cif_code: str):
         """Validates a cif number"""
@@ -130,14 +148,10 @@ class EnterpriseManager:
                          budget: str):
         """registers a new project"""
         self.validate_cif(company_cif)
-        acronym_pattern = re.compile(r"^[a-zA-Z0-9]{5,10}")
-        match = acronym_pattern.fullmatch(project_acronym)
-        if not match:
-            raise EnterpriseManagementException("Invalid acronym")
-        description_pattern = re.compile(r"^.{10,30}$")
-        match = description_pattern.fullmatch(project_description)
-        if not match:
-            raise EnterpriseManagementException("Invalid description format")
+
+        self._validate_acronym(project_acronym)
+
+        self._validate_description(project_description)
 
         department_pattern = re.compile(r"(HR|FINANCE|LEGAL|LOGISTICS)")
         match = department_pattern.fullmatch(department)
