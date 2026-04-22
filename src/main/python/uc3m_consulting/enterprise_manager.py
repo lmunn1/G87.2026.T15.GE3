@@ -10,6 +10,7 @@ from uc3m_consulting.enterprise_manager_config import (PROJECTS_STORE_FILE,
                                                        TEST_NUMDOCS_STORE_FILE)
 from uc3m_consulting.project_document import ProjectDocument
 from uc3m_consulting.storage import JsonStore, ProjectsJsonStore
+from uc3m_consulting.attributes import ProjectAcronym
 
 class EnterpriseManager:
     """Service class for registering projects and querying project documents"""
@@ -58,15 +59,6 @@ class EnterpriseManager:
             expected_control_digit = 0
 
         return expected_control_digit
-
-    # Long Functions: Added helper
-    @staticmethod
-    def _validate_acronym(project_acronym: str):
-        """Validate project acronym"""
-        acronym_pattern = re.compile(r"^[a-zA-Z0-9]{5,10}$")
-        match = acronym_pattern.fullmatch(project_acronym)
-        if not match:
-            raise EnterpriseManagementException("Invalid acronym")
 
     # Long Functions: Added helper
     @staticmethod
@@ -204,7 +196,7 @@ class EnterpriseManager:
         """registers a new project"""
         self.validate_cif(company_cif)
 
-        self._validate_acronym(project_acronym)
+        validated_acronym = ProjectAcronym(project_acronym)
 
         self._validate_description(project_description)
 
@@ -215,7 +207,7 @@ class EnterpriseManager:
         self._validate_budget(budget)
 
         new_project = EnterpriseProject(company_cif=company_cif,
-                                        project_acronym=project_acronym,
+                                        project_acronym=validated_acronym.value,
                                         project_description=project_description,
                                         department=department,
                                         starting_date=date,
