@@ -86,7 +86,7 @@ class EnterpriseManager:
     # Long Functions: Added helper
     @staticmethod
     def _validate_acronym(project_acronym: str):
-        """Validate project acronym."""
+        """Validate project acronym"""
         acronym_pattern = re.compile(r"^[a-zA-Z0-9]{5,10}$")
         match = acronym_pattern.fullmatch(project_acronym)
         if not match:
@@ -95,11 +95,48 @@ class EnterpriseManager:
     # Long Functions: Added helper
     @staticmethod
     def _validate_description(project_description: str):
-        """Validate project description."""
+        """Validate project description"""
         description_pattern = re.compile(r"^.{10,30}$")
         match = description_pattern.fullmatch(project_description)
         if not match:
             raise EnterpriseManagementException("Invalid description format")
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _validate_department(department: str):
+        """Validate department"""
+        department_pattern = re.compile(r"^(HR|FINANCE|LEGAL|LOGISTICS)$")
+        match = department_pattern.fullmatch(department)
+        if not match:
+            raise EnterpriseManagementException("Invalid department")
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _validate_budget(budget: str):
+        """Validate budget and return parsed float"""
+        try:
+            parsed_budget = float(budget)
+        except ValueError as exc:
+            raise EnterpriseManagementException("Invalid budget amount") from exc
+
+        budget_text = str(parsed_budget)
+        if '.' in budget_text:
+            decimal_places = len(budget_text.split('.')[1])
+            if decimal_places > 2:
+                raise EnterpriseManagementException("Invalid budget amount")
+
+        if parsed_budget < 50000 or parsed_budget > 1000000:
+            raise EnterpriseManagementException("Invalid budget amount")
+
+        return parsed_budget
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _check_project_not_duplicated(stored_projects, new_project):
+        """Check project is not already stored"""
+        for stored_project in stored_projects:
+            if stored_project == new_project.to_json():
+                raise EnterpriseManagementException("Duplicated project in projects list")
 
     @staticmethod
     def validate_cif(cif_code: str):
@@ -153,27 +190,11 @@ class EnterpriseManager:
 
         self._validate_description(project_description)
 
-        department_pattern = re.compile(r"(HR|FINANCE|LEGAL|LOGISTICS)")
-        match = department_pattern.fullmatch(department)
-        if not match:
-            raise EnterpriseManagementException("Invalid department")
+        self._validate_department(department)
 
         self.validate_starting_date(date)
 
-        try:
-            parsed_budget  = float(budget)
-        except ValueError as exc:
-            raise EnterpriseManagementException("Invalid budget amount") from exc
-
-        budget_text = str(parsed_budget)
-        if '.' in budget_text:
-            decimal_places = len(budget_text.split('.')[1])
-            if decimal_places > 2:
-                raise EnterpriseManagementException("Invalid budget amount")
-
-        if parsed_budget < 50000 or parsed_budget > 1000000:
-            raise EnterpriseManagementException("Invalid budget amount")
-
+        parsed_budget = self._validate_budget(budget)
 
         new_project = EnterpriseProject(company_cif=company_cif,
                                         project_acronym=project_acronym,
@@ -184,9 +205,7 @@ class EnterpriseManager:
 
         stored_projects = self._load_json_file(PROJECTS_STORE_FILE, default_on_missing=[])
 
-        for stored_project in stored_projects:
-            if stored_project == new_project.to_json():
-                raise EnterpriseManagementException("Duplicated project in projects list")
+        self._check_project_not_duplicated(stored_projects, new_project)
 
         stored_projects.append(new_project.to_json())
 
