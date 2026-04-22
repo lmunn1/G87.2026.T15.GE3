@@ -138,6 +138,48 @@ class EnterpriseManager:
             if stored_project == new_project.to_json():
                 raise EnterpriseManagementException("Duplicated project in projects list")
 
+    # Long Functions: Added helper
+    @staticmethod
+    def _document_matches_date(document_record, date_str):
+        """Return True if the document register date matches the query date."""
+        register_timestamp = document_record["register_date"]
+        doc_date_str = datetime.fromtimestamp(register_timestamp).strftime("%d/%m/%Y")
+        return doc_date_str == date_str
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _check_document_signature(document_record):
+        """Check whether the stored document signature is consistent."""
+        register_timestamp = document_record["register_date"]
+        document_datetime = datetime.fromtimestamp(register_timestamp, tz=timezone.utc)
+
+        with freeze_time(document_datetime):
+            project_document = ProjectDocument(
+                document_record["project_id"],
+                document_record["file_name"]
+            )
+
+            if project_document.document_signature != document_record["document_signature"]:
+                raise EnterpriseManagementException("Inconsistent document signature")
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _build_report_entry(date_str, document_count):
+        """Build the report entry for the queried date."""
+        report_timestamp = datetime.now(timezone.utc).timestamp()
+        return {
+            "Querydate": date_str,
+            "ReportDate": report_timestamp,
+            "Numfiles": document_count
+        }
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _check_documents_found(document_count):
+        """Raise exception if no matching documents were found."""
+        if document_count == 0:
+            raise EnterpriseManagementException("No documents found")
+
     @staticmethod
     def validate_cif(cif_code: str):
         """Validates a cif number"""
@@ -240,31 +282,14 @@ class EnterpriseManager:
 
         # loop to find
         for document_record in stored_documents:
-            register_timestamp = document_record["register_date"]
+            if self._document_matches_date(document_record, date_str):
+                self._check_document_signature(document_record)
+                document_count = document_count + 1
 
-            # string conversion for easy match
-            doc_date_str = datetime.fromtimestamp(register_timestamp).strftime("%d/%m/%Y")
+        self._check_documents_found(document_count)
 
-            if doc_date_str == date_str:
-                document_datetime = datetime.fromtimestamp(register_timestamp, tz=timezone.utc)
-                with freeze_time(document_datetime):
-                    # check the project id (thanks to freezetime)
-                    # if project_id are different then the data has been
-                    #manipulated
-                    project_document = ProjectDocument(document_record["project_id"], document_record["file_name"])
-                    if project_document.document_signature == document_record["document_signature"]:
-                        document_count = document_count + 1
-                    else:
-                        raise EnterpriseManagementException("Inconsistent document signature")
-
-        if document_count == 0:
-            raise EnterpriseManagementException("No documents found")
         # prepare json text
-        report_timestamp = datetime.now(timezone.utc).timestamp()
-        report_entry = {"Querydate":  date_str,
-             "ReportDate": report_timestamp,
-             "Numfiles": document_count
-             }
+        report_entry = self._build_report_entry(date_str, document_count)
 
         stored_reports = self._load_json_file(TEST_NUMDOCS_STORE_FILE, default_on_missing=[])
 
