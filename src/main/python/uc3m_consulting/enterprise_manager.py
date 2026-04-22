@@ -1,6 +1,5 @@
 """Enterprise Manager module for project registration and document queries"""
 import re
-import json
 
 from datetime import datetime, timezone
 from freezegun import freeze_time
@@ -10,6 +9,7 @@ from uc3m_consulting.enterprise_manager_config import (PROJECTS_STORE_FILE,
                                                        TEST_DOCUMENTS_STORE_FILE,
                                                        TEST_NUMDOCS_STORE_FILE)
 from uc3m_consulting.project_document import ProjectDocument
+from uc3m_consulting.storage import JsonStore
 
 class EnterpriseManager:
     """Service class for registering projects and querying project documents"""
@@ -28,30 +28,6 @@ class EnterpriseManager:
             return datetime.strptime(date_value, "%d/%m/%Y").date()
         except ValueError as ex:
             raise EnterpriseManagementException("Invalid date format") from ex
-
-    # Code Duplication: Added helper
-    @staticmethod
-    def _load_json_file(file_path, default_on_missing=None):
-        """Load and return JSON data from a file."""
-        try:
-            with open(file_path, "r", encoding="utf-8", newline="") as file:
-                return json.load(file)
-        except FileNotFoundError as ex:
-            if default_on_missing is not None:
-                return default_on_missing
-            raise EnterpriseManagementException("Wrong file  or file path") from ex
-        except json.JSONDecodeError as ex:
-            raise EnterpriseManagementException("JSON Decode Error - Wrong JSON Format") from ex
-
-    # Code Duplication: Added helper
-    @staticmethod
-    def _write_json_file(file_path, data):
-        """Write JSON data to a file."""
-        try:
-            with open(file_path, "w", encoding="utf-8", newline="") as file:
-                json.dump(data, file, indent=2)
-        except FileNotFoundError as ex:
-            raise EnterpriseManagementException("Wrong file  or file path") from ex
 
     # Long Functions: Added helper
     @staticmethod
@@ -236,7 +212,7 @@ class EnterpriseManager:
 
         self.validate_starting_date(date)
 
-        parsed_budget = self._validate_budget(budget)
+        self._validate_budget(budget)
 
         new_project = EnterpriseProject(company_cif=company_cif,
                                         project_acronym=project_acronym,
@@ -245,13 +221,13 @@ class EnterpriseManager:
                                         starting_date=date,
                                         project_budget=budget)
 
-        stored_projects = self._load_json_file(PROJECTS_STORE_FILE, default_on_missing=[])
+        stored_projects = JsonStore.load_json_file(PROJECTS_STORE_FILE, default_on_missing=[])
 
         self._check_project_not_duplicated(stored_projects, new_project)
 
         stored_projects.append(new_project.to_json())
 
-        self._write_json_file(PROJECTS_STORE_FILE, stored_projects)
+        JsonStore.write_json_file(PROJECTS_STORE_FILE, stored_projects)
 
         return new_project.project_id
 
@@ -276,7 +252,7 @@ class EnterpriseManager:
         self._parse_date(date_str)
 
         # open documents
-        stored_documents = self._load_json_file(TEST_DOCUMENTS_STORE_FILE)
+        stored_documents = JsonStore.load_json_file(TEST_DOCUMENTS_STORE_FILE)
 
         document_count = 0
 
@@ -291,10 +267,10 @@ class EnterpriseManager:
         # prepare json text
         report_entry = self._build_report_entry(date_str, document_count)
 
-        stored_reports = self._load_json_file(TEST_NUMDOCS_STORE_FILE, default_on_missing=[])
+        stored_reports = JsonStore.load_json_file(TEST_NUMDOCS_STORE_FILE, default_on_missing=[])
 
         stored_reports.append(report_entry)
 
-        self._write_json_file(TEST_NUMDOCS_STORE_FILE, stored_reports)
+        JsonStore.write_json_file(TEST_NUMDOCS_STORE_FILE, stored_reports)
 
         return document_count
