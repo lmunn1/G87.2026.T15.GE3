@@ -83,6 +83,103 @@ class EnterpriseManager:
 
         return expected_control_digit
 
+    # Long Functions: Added helper
+    @staticmethod
+    def _validate_acronym(project_acronym: str):
+        """Validate project acronym"""
+        acronym_pattern = re.compile(r"^[a-zA-Z0-9]{5,10}$")
+        match = acronym_pattern.fullmatch(project_acronym)
+        if not match:
+            raise EnterpriseManagementException("Invalid acronym")
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _validate_description(project_description: str):
+        """Validate project description"""
+        description_pattern = re.compile(r"^.{10,30}$")
+        match = description_pattern.fullmatch(project_description)
+        if not match:
+            raise EnterpriseManagementException("Invalid description format")
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _validate_department(department: str):
+        """Validate department"""
+        department_pattern = re.compile(r"^(HR|FINANCE|LEGAL|LOGISTICS)$")
+        match = department_pattern.fullmatch(department)
+        if not match:
+            raise EnterpriseManagementException("Invalid department")
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _validate_budget(budget: str):
+        """Validate budget and return parsed float"""
+        try:
+            parsed_budget = float(budget)
+        except ValueError as exc:
+            raise EnterpriseManagementException("Invalid budget amount") from exc
+
+        budget_text = str(parsed_budget)
+        if '.' in budget_text:
+            decimal_places = len(budget_text.split('.')[1])
+            if decimal_places > 2:
+                raise EnterpriseManagementException("Invalid budget amount")
+
+        if parsed_budget < 50000 or parsed_budget > 1000000:
+            raise EnterpriseManagementException("Invalid budget amount")
+
+        return parsed_budget
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _check_project_not_duplicated(stored_projects, new_project):
+        """Check project is not already stored"""
+        for stored_project in stored_projects:
+            if stored_project == new_project.to_json():
+                raise EnterpriseManagementException("Duplicated project in projects list")
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _document_matches_date(document_record, date_str):
+        """Return True if the document register date matches the query date."""
+        register_timestamp = document_record["register_date"]
+        doc_date_str = datetime.fromtimestamp(register_timestamp).strftime("%d/%m/%Y")
+        return doc_date_str == date_str
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _check_document_signature(document_record):
+        """Check whether the stored document signature is consistent."""
+        register_timestamp = document_record["register_date"]
+        document_datetime = datetime.fromtimestamp(register_timestamp, tz=timezone.utc)
+
+        with freeze_time(document_datetime):
+            project_document = ProjectDocument(
+                document_record["project_id"],
+                document_record["file_name"]
+            )
+
+            if project_document.document_signature != document_record["document_signature"]:
+                raise EnterpriseManagementException("Inconsistent document signature")
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _build_report_entry(date_str, document_count):
+        """Build the report entry for the queried date."""
+        report_timestamp = datetime.now(timezone.utc).timestamp()
+        return {
+            "Querydate": date_str,
+            "ReportDate": report_timestamp,
+            "Numfiles": document_count
+        }
+
+    # Long Functions: Added helper
+    @staticmethod
+    def _check_documents_found(document_count):
+        """Raise exception if no matching documents were found."""
+        if document_count == 0:
+            raise EnterpriseManagementException("No documents found")
+
     @staticmethod
     def validate_cif(cif_code: str):
         """Validates a cif number"""
@@ -130,36 +227,16 @@ class EnterpriseManager:
                          budget: str):
         """registers a new project"""
         self.validate_cif(company_cif)
-        acronym_pattern = re.compile(r"^[a-zA-Z0-9]{5,10}")
-        match = acronym_pattern.fullmatch(project_acronym)
-        if not match:
-            raise EnterpriseManagementException("Invalid acronym")
-        description_pattern = re.compile(r"^.{10,30}$")
-        match = description_pattern.fullmatch(project_description)
-        if not match:
-            raise EnterpriseManagementException("Invalid description format")
 
-        department_pattern = re.compile(r"(HR|FINANCE|LEGAL|LOGISTICS)")
-        match = department_pattern.fullmatch(department)
-        if not match:
-            raise EnterpriseManagementException("Invalid department")
+        self._validate_acronym(project_acronym)
+
+        self._validate_description(project_description)
+
+        self._validate_department(department)
 
         self.validate_starting_date(date)
 
-        try:
-            parsed_budget  = float(budget)
-        except ValueError as exc:
-            raise EnterpriseManagementException("Invalid budget amount") from exc
-
-        budget_text = str(parsed_budget)
-        if '.' in budget_text:
-            decimal_places = len(budget_text.split('.')[1])
-            if decimal_places > 2:
-                raise EnterpriseManagementException("Invalid budget amount")
-
-        if parsed_budget < 50000 or parsed_budget > 1000000:
-            raise EnterpriseManagementException("Invalid budget amount")
-
+        parsed_budget = self._validate_budget(budget)
 
         new_project = EnterpriseProject(company_cif=company_cif,
                                         project_acronym=project_acronym,
@@ -170,9 +247,7 @@ class EnterpriseManager:
 
         stored_projects = self._load_json_file(PROJECTS_STORE_FILE, default_on_missing=[])
 
-        for stored_project in stored_projects:
-            if stored_project == new_project.to_json():
-                raise EnterpriseManagementException("Duplicated project in projects list")
+        self._check_project_not_duplicated(stored_projects, new_project)
 
         stored_projects.append(new_project.to_json())
 
@@ -207,31 +282,14 @@ class EnterpriseManager:
 
         # loop to find
         for document_record in stored_documents:
-            register_timestamp = document_record["register_date"]
+            if self._document_matches_date(document_record, date_str):
+                self._check_document_signature(document_record)
+                document_count = document_count + 1
 
-            # string conversion for easy match
-            doc_date_str = datetime.fromtimestamp(register_timestamp).strftime("%d/%m/%Y")
+        self._check_documents_found(document_count)
 
-            if doc_date_str == date_str:
-                document_datetime = datetime.fromtimestamp(register_timestamp, tz=timezone.utc)
-                with freeze_time(document_datetime):
-                    # check the project id (thanks to freezetime)
-                    # if project_id are different then the data has been
-                    #manipulated
-                    project_document = ProjectDocument(document_record["project_id"], document_record["file_name"])
-                    if project_document.document_signature == document_record["document_signature"]:
-                        document_count = document_count + 1
-                    else:
-                        raise EnterpriseManagementException("Inconsistent document signature")
-
-        if document_count == 0:
-            raise EnterpriseManagementException("No documents found")
         # prepare json text
-        report_timestamp = datetime.now(timezone.utc).timestamp()
-        report_entry = {"Querydate":  date_str,
-             "ReportDate": report_timestamp,
-             "Numfiles": document_count
-             }
+        report_entry = self._build_report_entry(date_str, document_count)
 
         stored_reports = self._load_json_file(TEST_NUMDOCS_STORE_FILE, default_on_missing=[])
 
