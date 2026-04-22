@@ -15,7 +15,7 @@ class EnterpriseProject:
                  project_budget: float):
         self.__company_cif = company_cif
         self.__project_description = project_description
-        self.__project_achronym = project_acronym
+        self.__project_achronym = project_acronym # Do not change this
         self.__department = department
         self.__starting_date = starting_date
         self.__project_budget = project_budget
