@@ -23,26 +23,6 @@ class EnterpriseManager:
 
     # Long Functions: Added helper
     @staticmethod
-    def _validate_budget(budget: str):
-        """Validate budget and return parsed float"""
-        try:
-            parsed_budget = float(budget)
-        except ValueError as exc:
-            raise EnterpriseManagementException("Invalid budget amount") from exc
-
-        budget_text = str(parsed_budget)
-        if '.' in budget_text:
-            decimal_places = len(budget_text.split('.')[1])
-            if decimal_places > 2:
-                raise EnterpriseManagementException("Invalid budget amount")
-
-        if parsed_budget < 50000 or parsed_budget > 1000000:
-            raise EnterpriseManagementException("Invalid budget amount")
-
-        return parsed_budget
-
-    # Long Functions: Added helper
-    @staticmethod
     def _document_matches_date(document_record, date_str):
         """Return True if the document register date matches the query date."""
         register_timestamp = document_record["register_date"]
@@ -102,14 +82,14 @@ class EnterpriseManager:
 
         validated_date = ProjectDateAttribute(date)
 
-        self._validate_budget(budget)
+        validated_budget = ProjectBudgetAttribute(budget)
 
         new_project = EnterpriseProject(company_cif=validated_cif.value,
                                         project_acronym=validated_acronym.value,
                                         project_description=validated_description.value,
                                         department=validated_department.value,
                                         starting_date=validated_date.value,
-                                        project_budget=budget)
+                                        project_budget=validated_budget.value)
 
         ProjectsJsonStore.add_project(new_project)
 
