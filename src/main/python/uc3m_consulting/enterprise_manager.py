@@ -3,6 +3,7 @@ import re
 
 from datetime import datetime, timezone
 from freezegun import freeze_time
+
 from uc3m_consulting.enterprise_project import EnterpriseProject
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
 from uc3m_consulting.enterprise_manager_config import (PROJECTS_STORE_FILE,
@@ -10,7 +11,7 @@ from uc3m_consulting.enterprise_manager_config import (PROJECTS_STORE_FILE,
                                                        TEST_NUMDOCS_STORE_FILE)
 from uc3m_consulting.project_document import ProjectDocument
 from uc3m_consulting.storage import JsonStore, ProjectsJsonStore
-from uc3m_consulting.attributes import ProjectAcronym, ProjectDepartment
+from uc3m_consulting.attributes import ProjectAcronym, ProjectDepartment, ProjectDescription
 
 class EnterpriseManager:
     """Service class for registering projects and querying project documents"""
@@ -59,15 +60,6 @@ class EnterpriseManager:
             expected_control_digit = 0
 
         return expected_control_digit
-
-    # Long Functions: Added helper
-    @staticmethod
-    def _validate_description(project_description: str):
-        """Validate project description"""
-        description_pattern = re.compile(r"^.{10,30}$")
-        match = description_pattern.fullmatch(project_description)
-        if not match:
-            raise EnterpriseManagementException("Invalid description format")
 
     # Long Functions: Added helper
     @staticmethod
@@ -189,7 +181,7 @@ class EnterpriseManager:
 
         validated_acronym = ProjectAcronym(project_acronym)
 
-        self._validate_description(project_description)
+        validated_description = ProjectDescription(project_description)
 
         validated_department = ProjectDepartment(department)
 
@@ -199,7 +191,7 @@ class EnterpriseManager:
 
         new_project = EnterpriseProject(company_cif=company_cif,
                                         project_acronym=validated_acronym.value,
-                                        project_description=project_description,
+                                        project_description=validated_description.value,
                                         department=validated_department.value,
                                         starting_date=date,
                                         project_budget=budget)
