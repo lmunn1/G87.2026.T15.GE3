@@ -52,22 +52,7 @@ class EnterpriseManager:
 
         @staticmethod
         def find_docs(date_str):
-            """
-            Generates a JSON report counting valid documents for a specific date.
-
-            Checks cryptographic hashes and timestamps to ensure historical data integrity.
-            Saves the output to 'result.json'.
-
-            Args:
-                date_str (str): date to query.
-
-            Returns:
-                number of documents found if report is successfully generated and saved.
-
-            Raises:
-                EnterpriseManagementException: On invalid date, file IO errors,
-                    missing data, or cryptographic integrity failure.
-            """
+            """Find docs method to locate the documents and return the count"""
             DateAttribute(date_str)
 
             # Open documents
