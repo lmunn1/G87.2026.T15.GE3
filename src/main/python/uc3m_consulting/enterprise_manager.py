@@ -44,7 +44,8 @@ class EnterpriseManager:
                                             starting_date=validated_date.value,
                                             project_budget=validated_budget.value)
 
-            ProjectsJsonStore.add_project(new_project)
+
+            ProjectsJsonStore().add_project(new_project)
 
             return new_project.project_id
 
