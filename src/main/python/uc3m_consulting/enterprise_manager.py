@@ -82,11 +82,6 @@ class EnterpriseManager:
         if document_count == 0:
             raise EnterpriseManagementException("No documents found")
 
-    def validate_starting_date(self, starting_date):
-        """Validates the  date format  using regex"""
-        validated_date = ProjectDateAttribute(starting_date)
-        return validated_date
-
     #pylint: disable=too-many-arguments, too-many-positional-arguments
     def register_project(self,
                          company_cif: str,
@@ -104,7 +99,7 @@ class EnterpriseManager:
 
         validated_department = ProjectDepartment(department)
 
-        validated_date = self.validate_starting_date(date)
+        validated_date = ProjectDateAttribute(date)
 
         self._validate_budget(budget)
 
