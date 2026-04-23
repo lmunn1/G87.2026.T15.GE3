@@ -54,7 +54,7 @@ class EnterpriseManager:
             """Find docs method to locate the documents and return the count"""
             DateAttribute(date_str)
 
-            stored_documents = JsonStore.load_json_file(TEST_DOCUMENTS_STORE_FILE)
+            stored_documents = DocumentsJsonStore().load_documents()
 
             document_count = 0
 
@@ -67,7 +67,7 @@ class EnterpriseManager:
 
             report_entry = DocumentManager.build_report_entry(date_str, document_count)
 
-            NumDocsJsonStore.add_report(report_entry)
+            NumDocsJsonStore().add_report(report_entry)
 
             return document_count
 
