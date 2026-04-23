@@ -1,3 +1,4 @@
+"""Module handling logic related to documents and JSON"""
 from uc3m_consulting.enterprise_manager_config import TEST_DOCUMENTS_STORE_FILE
 from uc3m_consulting.storage.json_store import JsonStore
 

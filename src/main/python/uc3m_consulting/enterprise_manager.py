@@ -1,8 +1,7 @@
 """Enterprise Manager module for project registration and document queries"""
 from uc3m_consulting.enterprise_project import EnterpriseProject
-from uc3m_consulting.enterprise_manager_config import TEST_DOCUMENTS_STORE_FILE
 from uc3m_consulting.document_manager import DocumentManager
-from uc3m_consulting.storage import JsonStore, ProjectsJsonStore, DocumentsJsonStore, NumDocsJsonStore
+from uc3m_consulting.storage import ProjectsJsonStore, DocumentsJsonStore, NumDocsJsonStore
 from uc3m_consulting.attributes import (
     ProjectAcronym, ProjectDepartment,
     ProjectDescription, DateAttribute,
