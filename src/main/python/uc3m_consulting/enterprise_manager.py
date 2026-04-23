@@ -1,9 +1,8 @@
 """Enterprise Manager module for project registration and document queries"""
 from uc3m_consulting.enterprise_project import EnterpriseProject
-from uc3m_consulting.enterprise_manager_config import (TEST_DOCUMENTS_STORE_FILE,
-                                                       TEST_NUMDOCS_STORE_FILE)
+from uc3m_consulting.enterprise_manager_config import TEST_DOCUMENTS_STORE_FILE
 from uc3m_consulting.document_manager import DocumentManager
-from uc3m_consulting.storage import JsonStore, ProjectsJsonStore, DocumentsJsonStore
+from uc3m_consulting.storage import JsonStore, ProjectsJsonStore, DocumentsJsonStore, NumDocsJsonStore
 from uc3m_consulting.attributes import (
     ProjectAcronym, ProjectDepartment,
     ProjectDescription, DateAttribute,
@@ -55,7 +54,7 @@ class EnterpriseManager:
             """Find docs method to locate the documents and return the count"""
             DateAttribute(date_str)
 
-            stored_documents = DocumentsJsonStore.load_documents()
+            stored_documents = JsonStore.load_json_file(TEST_DOCUMENTS_STORE_FILE)
 
             document_count = 0
 
@@ -68,14 +67,7 @@ class EnterpriseManager:
 
             report_entry = DocumentManager.build_report_entry(date_str, document_count)
 
-            stored_reports = JsonStore.load_json_file(
-                TEST_NUMDOCS_STORE_FILE,
-                default_on_missing=[]
-            )
-
-            stored_reports.append(report_entry)
-
-            JsonStore.write_json_file(TEST_NUMDOCS_STORE_FILE, stored_reports)
+            NumDocsJsonStore.add_report(report_entry)
 
             return document_count
 
