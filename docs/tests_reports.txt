@@ -1,0 +1,41 @@
+PyBuilder version 0.13.18
+Build started at 2026-04-23 18:40:35
+------------------------------------------------------------
+[INFO]  Building GE3 version 1.0.dev0
+[INFO]  Executing build in /Users/linusmunn/PycharmProjects/G87.2026.T15.GE3
+[INFO]  Going to execute task publish
+[INFO]  Processing plugin packages 'coverage>=6.0' to be installed with {'upgrade': True}
+[INFO]  Processing plugin packages 'unittest-xml-reporting>=3.0.4' to be installed with {'upgrade': True}
+[INFO]  Creating target 'build' VEnv in '/Users/linusmunn/PycharmProjects/G87.2026.T15.GE3/target/venv/build/cpython-3.11.5.final.0'
+[INFO]  Creating target 'test' VEnv in '/Users/linusmunn/PycharmProjects/G87.2026.T15.GE3/target/venv/test/cpython-3.11.5.final.0'
+[INFO]  Requested coverage for tasks: pybuilder.plugins.python.unittest_plugin:run_unit_tests
+[INFO]  Running unit tests
+[INFO]  Executing unit tests from Python modules in /Users/linusmunn/PycharmProjects/G87.2026.T15.GE3/src/unittest/python
+[INFO]  Executed 10 unit tests
+[INFO]  All unit tests passed.
+[INFO]  Building distribution in /Users/linusmunn/PycharmProjects/G87.2026.T15.GE3/target/dist/GE3-1.0.dev0
+[INFO]  Copying scripts to /Users/linusmunn/PycharmProjects/G87.2026.T15.GE3/target/dist/GE3-1.0.dev0/scripts
+[INFO]  Collecting coverage information for 'pybuilder.plugins.python.unittest_plugin:run_unit_tests'
+[WARN]  ut_coverage_branch_threshold_warn is 0 and branch coverage will not be checked
+[WARN]  ut_coverage_branch_partial_threshold_warn is 0 and partial branch coverage will not be checked
+[INFO]  Running unit tests
+[INFO]  Executing unit tests from Python modules in /Users/linusmunn/PycharmProjects/G87.2026.T15.GE3/src/unittest/python
+[INFO]  Executed 10 unit tests
+[INFO]  All unit tests passed.
+[INFO]  Overall pybuilder.plugins.python.unittest_plugin.run_unit_tests coverage is 90%
+[INFO]  Overall pybuilder.plugins.python.unittest_plugin.run_unit_tests branch coverage is 88%
+[INFO]  Overall pybuilder.plugins.python.unittest_plugin.run_unit_tests partial branch coverage is 88%
+[INFO]  Overall GE3 coverage is 90%
+[INFO]  Overall GE3 branch coverage is 88%
+[INFO]  Overall GE3 partial branch coverage is 88%
+------------------------------------------------------------
+BUILD SUCCESSFUL
+------------------------------------------------------------
+Build Summary
+             Project: GE3
+             Version: 1.0.dev0
+      Base directory: /Users/linusmunn/PycharmProjects/G87.2026.T15.GE3
+        Environments: 
+               Tasks: prepare [1372 ms] compile_sources [0 ms] run_unit_tests [280 ms] package [8 ms] run_integration_tests [0 ms] verify [0 ms] coverage [631 ms] publish [0 ms]
+Build finished at 2026-04-23 18:40:37
+Build took 2 seconds (2758 ms)
