@@ -1,4 +1,4 @@
-import re
+"""Extracted Date validation logic"""
 from datetime import datetime
 
 from uc3m_consulting.attributes.attribute import Attribute

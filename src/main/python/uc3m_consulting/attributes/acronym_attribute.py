@@ -1,5 +1,5 @@
+"""Module to handle acronym validation logic"""
 from uc3m_consulting.attributes.attribute import Attribute
-
 
 class ProjectAcronym(Attribute):
     """Definition of attribute acronym class"""

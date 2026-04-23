@@ -1,3 +1,4 @@
+"""Module containing important JSON logic for loading and writing"""
 import json
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
 

@@ -1,3 +1,4 @@
+"""Module to perform logic on Projects relating to JSON"""
 from uc3m_consulting.enterprise_management_exception import (
     EnterpriseManagementException,
 )
@@ -50,3 +51,8 @@ class ProjectsJsonStore:
         if cls.instance is None:
             cls.instance = cls.__ProjectsJsonStore()
         return cls.instance
+
+    def __getattr__(self, name):
+        return getattr(self.instance, name)
+    def __setattr__(self, name, value):
+        return setattr(self.instance, name, value)

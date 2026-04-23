@@ -11,6 +11,7 @@ from uc3m_consulting.attributes import (
     ProjectBudgetAttribute
 )
 class EnterpriseManager:
+    """Service class for registering projects and querying project documents"""
     class __EnterpriseManager:
         """Service class for registering projects and querying project documents"""
         def __init__(self):

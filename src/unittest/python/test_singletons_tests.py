@@ -1,7 +1,7 @@
+"""Test file to test the Singleton Pattern on different modules"""
 from unittest import TestCase
-from os import remove
-import os
 from uc3m_consulting import EnterpriseManager
+from uc3m_consulting.storage import ProjectsJsonStore
 
 # One test for each singleton class
 class SingletonTest(TestCase):
@@ -13,3 +13,11 @@ class SingletonTest(TestCase):
         self.assertEqual(enterprise_manager1, enterprise_manager2)
         self.assertEqual(enterprise_manager1, enterprise_manager3)
         self.assertEqual(enterprise_manager2, enterprise_manager3)
+
+    def test_projects_json_store_singleton(self):
+        first_instance = ProjectsJsonStore()
+        second_instance = ProjectsJsonStore()
+        third_instance = ProjectsJsonStore()
+        self.assertEqual(first_instance, second_instance)
+        self.assertEqual(first_instance, third_instance)
+        self.assertEqual(second_instance, third_instance)

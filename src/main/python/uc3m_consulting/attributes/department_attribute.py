@@ -1,5 +1,5 @@
+"""Handles department validation logic/rules"""
 from uc3m_consulting.attributes.attribute import Attribute
-
 
 class ProjectDepartment(Attribute):
     """Definition of attribute department class"""

@@ -1,3 +1,4 @@
+"""Handles date validation logic/rules"""
 from datetime import datetime, timezone
 
 from uc3m_consulting.attributes.date_attribute import DateAttribute
