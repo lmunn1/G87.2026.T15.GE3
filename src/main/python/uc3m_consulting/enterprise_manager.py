@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from freezegun import freeze_time
 
 from uc3m_consulting.enterprise_project import EnterpriseProject
+from uc3m_consulting.document_manager import DocumentManager
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
 from uc3m_consulting.enterprise_manager_config import (TEST_DOCUMENTS_STORE_FILE,
                                                        TEST_NUMDOCS_STORE_FILE)
@@ -19,48 +20,6 @@ class EnterpriseManager:
     """Service class for registering projects and querying project documents"""
     def __init__(self):
         pass
-
-    # Long Functions: Added helper
-    @staticmethod
-    def _document_matches_date(document_record, date_str):
-        """Return True if the document register date matches the query date."""
-        register_timestamp = document_record["register_date"]
-        doc_date_str = datetime.fromtimestamp(register_timestamp).strftime("%d/%m/%Y")
-        return doc_date_str == date_str
-
-    # Long Functions: Added helper
-    @staticmethod
-    def _check_document_signature(document_record):
-        """Check whether the stored document signature is consistent."""
-        register_timestamp = document_record["register_date"]
-        document_datetime = datetime.fromtimestamp(register_timestamp, tz=timezone.utc)
-
-        with freeze_time(document_datetime):
-            project_document = ProjectDocument(
-                document_record["project_id"],
-                document_record["file_name"]
-            )
-
-            if project_document.document_signature != document_record["document_signature"]:
-                raise EnterpriseManagementException("Inconsistent document signature")
-
-    # Long Functions: Added helper
-    @staticmethod
-    def _build_report_entry(date_str, document_count):
-        """Build the report entry for the queried date."""
-        report_timestamp = datetime.now(timezone.utc).timestamp()
-        return {
-            "Querydate": date_str,
-            "ReportDate": report_timestamp,
-            "Numfiles": document_count
-        }
-
-    # Long Functions: Added helper
-    @staticmethod
-    def _check_documents_found(document_count):
-        """Raise exception if no matching documents were found."""
-        if document_count == 0:
-            raise EnterpriseManagementException("No documents found")
 
     #pylint: disable=too-many-arguments, too-many-positional-arguments
     def register_project(self,
@@ -100,7 +59,7 @@ class EnterpriseManager:
         Generates a JSON report counting valid documents for a specific date.
 
         Checks cryptographic hashes and timestamps to ensure historical data integrity.
-        Saves the output to 'resultado.json'.
+        Saves the output to 'result.json'.
 
         Args:
             date_str (str): date to query.
@@ -114,23 +73,25 @@ class EnterpriseManager:
         """
         DateAttribute(date_str)
 
-        # open documents
+        # Open documents
         stored_documents = JsonStore.load_json_file(TEST_DOCUMENTS_STORE_FILE)
 
         document_count = 0
 
-        # loop to find
+        # Loop to find
         for document_record in stored_documents:
-            if self._document_matches_date(document_record, date_str):
-                self._check_document_signature(document_record)
+            if DocumentManager.document_matches_date(document_record, date_str):
+                DocumentManager.check_document_signature(document_record)
                 document_count = document_count + 1
 
-        self._check_documents_found(document_count)
+        DocumentManager.check_documents_found(document_count)
 
-        # prepare json text
-        report_entry = self._build_report_entry(date_str, document_count)
+        report_entry = DocumentManager.build_report_entry(date_str, document_count)
 
-        stored_reports = JsonStore.load_json_file(TEST_NUMDOCS_STORE_FILE, default_on_missing=[])
+        stored_reports = JsonStore.load_json_file(
+            TEST_NUMDOCS_STORE_FILE,
+            default_on_missing=[]
+        )
 
         stored_reports.append(report_entry)
 
