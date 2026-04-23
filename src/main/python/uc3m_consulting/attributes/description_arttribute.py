@@ -1,6 +1,6 @@
 from uc3m_consulting.attributes.attribute import Attribute
 
-class ProjectDescriptionAttribute(Attribute):
+class ProjectDescription(Attribute):
     """Definition of attribute description class"""
 
     def __init__(self, attr_value):
