@@ -1,13 +1,8 @@
 """Enterprise Manager module for project registration and document queries"""
-from datetime import datetime, timezone
-from freezegun import freeze_time
-
 from uc3m_consulting.enterprise_project import EnterpriseProject
-from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
-from uc3m_consulting.enterprise_manager_config import (PROJECTS_STORE_FILE,
-                                                       TEST_DOCUMENTS_STORE_FILE,
+from uc3m_consulting.enterprise_manager_config import (TEST_DOCUMENTS_STORE_FILE,
                                                        TEST_NUMDOCS_STORE_FILE)
-from uc3m_consulting.project_document import ProjectDocument
+from uc3m_consulting.document_manager import DocumentManager
 from uc3m_consulting.storage import JsonStore, ProjectsJsonStore
 from uc3m_consulting.attributes import (
     ProjectAcronym, ProjectDepartment,
@@ -15,126 +10,98 @@ from uc3m_consulting.attributes import (
     ProjectDateAttribute, CifAttribute,
     ProjectBudgetAttribute
 )
-
 class EnterpriseManager:
-    """Service class for registering projects and querying project documents"""
-    def __init__(self):
-        pass
+    class __EnterpriseManager:
+        """Service class for registering projects and querying project documents"""
+        def __init__(self):
+            pass
 
-    # Long Functions: Added helper
-    @staticmethod
-    def _document_matches_date(document_record, date_str):
-        """Return True if the document register date matches the query date."""
-        register_timestamp = document_record["register_date"]
-        doc_date_str = datetime.fromtimestamp(register_timestamp).strftime("%d/%m/%Y")
-        return doc_date_str == date_str
+        #pylint: disable=too-many-arguments, too-many-positional-arguments
+        @staticmethod
+        def register_project(company_cif: str,
+                             project_acronym: str,
+                             project_description: str,
+                             department: str,
+                             date: str,
+                             budget: str):
+            """registers a new project"""
+            validated_cif = CifAttribute(company_cif)
 
-    # Long Functions: Added helper
-    @staticmethod
-    def _check_document_signature(document_record):
-        """Check whether the stored document signature is consistent."""
-        register_timestamp = document_record["register_date"]
-        document_datetime = datetime.fromtimestamp(register_timestamp, tz=timezone.utc)
+            validated_acronym = ProjectAcronym(project_acronym)
 
-        with freeze_time(document_datetime):
-            project_document = ProjectDocument(
-                document_record["project_id"],
-                document_record["file_name"]
+            validated_description = ProjectDescription(project_description)
+
+            validated_department = ProjectDepartment(department)
+
+            validated_date = ProjectDateAttribute(date)
+
+            validated_budget = ProjectBudgetAttribute(budget)
+
+            new_project = EnterpriseProject(company_cif=validated_cif.value,
+                                            project_acronym=validated_acronym.value,
+                                            project_description=validated_description.value,
+                                            department=validated_department.value,
+                                            starting_date=validated_date.value,
+                                            project_budget=validated_budget.value)
+
+            ProjectsJsonStore.add_project(new_project)
+
+            return new_project.project_id
+
+        @staticmethod
+        def find_docs(date_str):
+            """
+            Generates a JSON report counting valid documents for a specific date.
+
+            Checks cryptographic hashes and timestamps to ensure historical data integrity.
+            Saves the output to 'result.json'.
+
+            Args:
+                date_str (str): date to query.
+
+            Returns:
+                number of documents found if report is successfully generated and saved.
+
+            Raises:
+                EnterpriseManagementException: On invalid date, file IO errors,
+                    missing data, or cryptographic integrity failure.
+            """
+            DateAttribute(date_str)
+
+            # Open documents
+            stored_documents = JsonStore.load_json_file(TEST_DOCUMENTS_STORE_FILE)
+
+            document_count = 0
+
+            # Loop to find
+            for document_record in stored_documents:
+                if DocumentManager.document_matches_date(document_record, date_str):
+                    DocumentManager.check_document_signature(document_record)
+                    document_count = document_count + 1
+
+            DocumentManager.check_documents_found(document_count)
+
+            report_entry = DocumentManager.build_report_entry(date_str, document_count)
+
+            stored_reports = JsonStore.load_json_file(
+                TEST_NUMDOCS_STORE_FILE,
+                default_on_missing=[]
             )
 
-            if project_document.document_signature != document_record["document_signature"]:
-                raise EnterpriseManagementException("Inconsistent document signature")
+            stored_reports.append(report_entry)
 
-    # Long Functions: Added helper
-    @staticmethod
-    def _build_report_entry(date_str, document_count):
-        """Build the report entry for the queried date."""
-        report_timestamp = datetime.now(timezone.utc).timestamp()
-        return {
-            "Querydate": date_str,
-            "ReportDate": report_timestamp,
-            "Numfiles": document_count
-        }
+            JsonStore.write_json_file(TEST_NUMDOCS_STORE_FILE, stored_reports)
 
-    # Long Functions: Added helper
-    @staticmethod
-    def _check_documents_found(document_count):
-        """Raise exception if no matching documents were found."""
-        if document_count == 0:
-            raise EnterpriseManagementException("No documents found")
+            return document_count
 
-    #pylint: disable=too-many-arguments, too-many-positional-arguments
-    def register_project(self,
-                         company_cif: str,
-                         project_acronym: str,
-                         project_description: str,
-                         department: str,
-                         date: str,
-                         budget: str):
-        """registers a new project"""
-        validated_cif = CifAttribute(company_cif)
+    instance = None
 
-        validated_acronym = ProjectAcronym(project_acronym)
+    def __new__(cls, *args, **kwargs):
+        if cls.instance is None:
+            cls.instance = cls.__EnterpriseManager()
+        return cls.instance
 
-        validated_description = ProjectDescription(project_description)
-
-        validated_department = ProjectDepartment(department)
-
-        validated_date = ProjectDateAttribute(date)
-
-        validated_budget = ProjectBudgetAttribute(budget)
-
-        new_project = EnterpriseProject(company_cif=validated_cif.value,
-                                        project_acronym=validated_acronym.value,
-                                        project_description=validated_description.value,
-                                        department=validated_department.value,
-                                        starting_date=validated_date.value,
-                                        project_budget=validated_budget.value)
-
-        ProjectsJsonStore.add_project(new_project)
-
-        return new_project.project_id
-
-
-    def find_docs(self, date_str):
-        """
-        Generates a JSON report counting valid documents for a specific date.
-
-        Checks cryptographic hashes and timestamps to ensure historical data integrity.
-        Saves the output to 'resultado.json'.
-
-        Args:
-            date_str (str): date to query.
-
-        Returns:
-            number of documents found if report is successfully generated and saved.
-
-        Raises:
-            EnterpriseManagementException: On invalid date, file IO errors,
-                missing data, or cryptographic integrity failure.
-        """
-        DateAttribute(date_str)
-
-        # open documents
-        stored_documents = JsonStore.load_json_file(TEST_DOCUMENTS_STORE_FILE)
-
-        document_count = 0
-
-        # loop to find
-        for document_record in stored_documents:
-            if self._document_matches_date(document_record, date_str):
-                self._check_document_signature(document_record)
-                document_count = document_count + 1
-
-        self._check_documents_found(document_count)
-
-        # prepare json text
-        report_entry = self._build_report_entry(date_str, document_count)
-
-        stored_reports = JsonStore.load_json_file(TEST_NUMDOCS_STORE_FILE, default_on_missing=[])
-
-        stored_reports.append(report_entry)
-
-        JsonStore.write_json_file(TEST_NUMDOCS_STORE_FILE, stored_reports)
-
-        return document_count
+    def __getattr__(self, name):
+        return getattr(self.instance, name)
+    def __setattr__(self, name, value):
+        return setattr(self.instance, name, value)
