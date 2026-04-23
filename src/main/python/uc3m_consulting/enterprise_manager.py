@@ -11,7 +11,9 @@ from uc3m_consulting.enterprise_manager_config import (PROJECTS_STORE_FILE,
                                                        TEST_NUMDOCS_STORE_FILE)
 from uc3m_consulting.project_document import ProjectDocument
 from uc3m_consulting.storage import JsonStore, ProjectsJsonStore
-from uc3m_consulting.attributes import ProjectAcronym, ProjectDepartment, ProjectDescription, DateAttribute
+from uc3m_consulting.attributes import (
+    ProjectAcronym, ProjectDepartment, ProjectDescription, DateAttribute, ProjectDateAttribute
+)
 
 class EnterpriseManager:
     """Service class for registering projects and querying project documents"""
@@ -146,15 +148,7 @@ class EnterpriseManager:
 
     def validate_starting_date(self, starting_date):
         """Validates the  date format  using regex"""
-        validated_date = DateAttribute(starting_date)
-        parsed_date = datetime.strptime(validated_date.value, "%d/%m/%Y").date()
-
-        if parsed_date < datetime.now(timezone.utc).date():
-            raise EnterpriseManagementException("Project's date must be today or later.")
-
-        if parsed_date.year < 2025 or parsed_date.year > 2050:
-            raise EnterpriseManagementException("Invalid date format")
-
+        validated_date = ProjectDateAttribute(starting_date)
         return validated_date
 
     #pylint: disable=too-many-arguments, too-many-positional-arguments
