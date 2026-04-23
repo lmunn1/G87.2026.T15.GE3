@@ -1,3 +1,4 @@
+"""Test file to test the Singleton Pattern on different modules"""
 from unittest import TestCase
 from uc3m_consulting import EnterpriseManager
 from uc3m_consulting.storage import ProjectsJsonStore

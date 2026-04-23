@@ -1,3 +1,4 @@
+"""Module to handle description validation rules/logic"""
 from uc3m_consulting.attributes.attribute import Attribute
 
 class ProjectDescription(Attribute):
@@ -9,4 +10,3 @@ class ProjectDescription(Attribute):
             r"^.{10,30}$",
             "Invalid description format"
         )
-

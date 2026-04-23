@@ -1,3 +1,4 @@
+"""General attribute module, attributes inherit from this class"""
 import re
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
 

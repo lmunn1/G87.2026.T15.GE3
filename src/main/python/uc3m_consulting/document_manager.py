@@ -1,7 +1,6 @@
+"""Document Manager module to perform logic on documents"""
 from datetime import datetime, timezone
-
 from freezegun import freeze_time
-
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
 from uc3m_consulting.project_document import ProjectDocument
 
