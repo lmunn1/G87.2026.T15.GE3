@@ -3,7 +3,7 @@ from uc3m_consulting.enterprise_project import EnterpriseProject
 from uc3m_consulting.enterprise_manager_config import (TEST_DOCUMENTS_STORE_FILE,
                                                        TEST_NUMDOCS_STORE_FILE)
 from uc3m_consulting.document_manager import DocumentManager
-from uc3m_consulting.storage import JsonStore, ProjectsJsonStore
+from uc3m_consulting.storage import JsonStore, ProjectsJsonStore, DocumentsJsonStore
 from uc3m_consulting.attributes import (
     ProjectAcronym, ProjectDepartment,
     ProjectDescription, DateAttribute,
@@ -55,12 +55,10 @@ class EnterpriseManager:
             """Find docs method to locate the documents and return the count"""
             DateAttribute(date_str)
 
-            # Open documents
-            stored_documents = JsonStore.load_json_file(TEST_DOCUMENTS_STORE_FILE)
+            stored_documents = DocumentsJsonStore.load_documents()
 
             document_count = 0
 
-            # Loop to find
             for document_record in stored_documents:
                 if DocumentManager.document_matches_date(document_record, date_str):
                     DocumentManager.check_document_signature(document_record)
