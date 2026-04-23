@@ -5,3 +5,4 @@ from .description_arttribute import ProjectDescription
 from .date_attribute import DateAttribute
 from .project_date_attribute import ProjectDateAttribute
 from .cif_attribute import CifAttribute
+from .project_budget_attribute import ProjectBudgetAttribute

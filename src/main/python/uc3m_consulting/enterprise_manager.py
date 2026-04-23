@@ -12,7 +12,8 @@ from uc3m_consulting.storage import JsonStore, ProjectsJsonStore
 from uc3m_consulting.attributes import (
     ProjectAcronym, ProjectDepartment,
     ProjectDescription, DateAttribute,
-    ProjectDateAttribute, CifAttribute
+    ProjectDateAttribute, CifAttribute,
+    ProjectBudgetAttribute
 )
 
 class EnterpriseManager:
