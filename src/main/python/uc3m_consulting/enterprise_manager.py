@@ -11,25 +11,12 @@ from uc3m_consulting.enterprise_manager_config import (PROJECTS_STORE_FILE,
                                                        TEST_NUMDOCS_STORE_FILE)
 from uc3m_consulting.project_document import ProjectDocument
 from uc3m_consulting.storage import JsonStore, ProjectsJsonStore
-from uc3m_consulting.attributes import ProjectAcronym, ProjectDepartment, ProjectDescription
+from uc3m_consulting.attributes import ProjectAcronym, ProjectDepartment, ProjectDescription, DateAttribute
 
 class EnterpriseManager:
     """Service class for registering projects and querying project documents"""
     def __init__(self):
         pass
-
-    # Code Duplication - Added helper
-    @staticmethod
-    def _parse_date(date_value: str):
-        """Validate a date string and return the parsed date"""
-        date_pattern = re.compile(r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$")
-        match = date_pattern.fullmatch(date_value)
-        if not match:
-            raise EnterpriseManagementException("Invalid date format")
-        try:
-            return datetime.strptime(date_value, "%d/%m/%Y").date()
-        except ValueError as ex:
-            raise EnterpriseManagementException("Invalid date format") from ex
 
     # Long Functions: Added helper
     @staticmethod
@@ -158,15 +145,17 @@ class EnterpriseManager:
         return True
 
     def validate_starting_date(self, starting_date):
-        """validates the  date format  using regex"""
-        parsed_date = self._parse_date(starting_date)
+        """Validates the  date format  using regex"""
+        validated_date = DateAttribute(starting_date)
+        parsed_date = datetime.strptime(validated_date.value, "%d/%m/%Y").date()
 
         if parsed_date < datetime.now(timezone.utc).date():
             raise EnterpriseManagementException("Project's date must be today or later.")
 
         if parsed_date.year < 2025 or parsed_date.year > 2050:
             raise EnterpriseManagementException("Invalid date format")
-        return starting_date
+
+        return validated_date
 
     #pylint: disable=too-many-arguments, too-many-positional-arguments
     def register_project(self,
@@ -185,7 +174,7 @@ class EnterpriseManager:
 
         validated_department = ProjectDepartment(department)
 
-        self.validate_starting_date(date)
+        validated_date = self.validate_starting_date(date)
 
         self._validate_budget(budget)
 
@@ -193,7 +182,7 @@ class EnterpriseManager:
                                         project_acronym=validated_acronym.value,
                                         project_description=validated_description.value,
                                         department=validated_department.value,
-                                        starting_date=date,
+                                        starting_date=validated_date.value,
                                         project_budget=budget)
 
         ProjectsJsonStore.add_project(new_project)
@@ -218,7 +207,7 @@ class EnterpriseManager:
             EnterpriseManagementException: On invalid date, file IO errors,
                 missing data, or cryptographic integrity failure.
         """
-        self._parse_date(date_str)
+        DateAttribute(date_str)
 
         # open documents
         stored_documents = JsonStore.load_json_file(TEST_DOCUMENTS_STORE_FILE)
