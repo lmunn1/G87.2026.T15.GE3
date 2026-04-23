@@ -10,7 +10,7 @@ from uc3m_consulting.enterprise_manager_config import (PROJECTS_STORE_FILE,
                                                        TEST_NUMDOCS_STORE_FILE)
 from uc3m_consulting.project_document import ProjectDocument
 from uc3m_consulting.storage import JsonStore, ProjectsJsonStore
-from uc3m_consulting.attributes import ProjectAcronym
+from uc3m_consulting.attributes import ProjectAcronym, ProjectDepartment
 
 class EnterpriseManager:
     """Service class for registering projects and querying project documents"""
@@ -68,15 +68,6 @@ class EnterpriseManager:
         match = description_pattern.fullmatch(project_description)
         if not match:
             raise EnterpriseManagementException("Invalid description format")
-
-    # Long Functions: Added helper
-    @staticmethod
-    def _validate_department(department: str):
-        """Validate department"""
-        department_pattern = re.compile(r"^(HR|FINANCE|LEGAL|LOGISTICS)$")
-        match = department_pattern.fullmatch(department)
-        if not match:
-            raise EnterpriseManagementException("Invalid department")
 
     # Long Functions: Added helper
     @staticmethod
@@ -200,7 +191,7 @@ class EnterpriseManager:
 
         self._validate_description(project_description)
 
-        self._validate_department(department)
+        validated_department = ProjectDepartment(department)
 
         self.validate_starting_date(date)
 
@@ -209,7 +200,7 @@ class EnterpriseManager:
         new_project = EnterpriseProject(company_cif=company_cif,
                                         project_acronym=validated_acronym.value,
                                         project_description=project_description,
-                                        department=department,
+                                        department=validated_department.value,
                                         starting_date=date,
                                         project_budget=budget)
 
