@@ -22,8 +22,8 @@ class EnterpriseManager:
         pass
 
     #pylint: disable=too-many-arguments, too-many-positional-arguments
-    def register_project(self,
-                         company_cif: str,
+    @staticmethod
+    def register_project(company_cif: str,
                          project_acronym: str,
                          project_description: str,
                          department: str,
@@ -53,8 +53,8 @@ class EnterpriseManager:
 
         return new_project.project_id
 
-
-    def find_docs(self, date_str):
+    @staticmethod
+    def find_docs(date_str):
         """
         Generates a JSON report counting valid documents for a specific date.
 
